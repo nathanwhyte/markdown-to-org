@@ -1,8 +1,4 @@
-use std::{
-	fs::File,
-	io::{BufRead, BufReader},
-	process::exit,
-};
+use std::{fs::File, process::exit};
 
 /// File actions (open, create, read lines, etc.)
 mod files;
@@ -12,17 +8,17 @@ struct MarkdownFile {
 	title: String,
 }
 
+enum SyntaxElementType {
+	Header,
+	UnorderedEntry,
+	OrderedEntry,
+}
+
 struct MarkdownSyntaxElement {
 	element_depth: i32,
 	element_type: SyntaxElementType,
 	list_order: i32,
 	element_text: String,
-}
-
-enum SyntaxElementType {
-	Header,
-	UnorderedEntry,
-	OrderedEntry,
 }
 
 /// Indent by two spaces for sub-items
@@ -33,8 +29,7 @@ static MAX_DEPTH: i32 = 5;
 
 fn main() {
 	let args: Vec<String> = collect_args();
-
-	let markdown_file: MarkdownFile = get_markdown_file(args[1].clone());
+	let markdown_file_struct: MarkdownFile = get_markdown_file(args[1].clone());
 }
 
 /// Collects command line arguments and handles an incorrect amount of arguments
@@ -51,8 +46,8 @@ fn collect_args() -> Vec<String> {
 
 /// Open the Markdown file at given path and build MarkdownFile struct for that file
 fn get_markdown_file(markdown_file_path: String) -> MarkdownFile {
+	let markdown_file_title: String = get_markdown_file_title(markdown_file_path.clone());
 	let markdown_file: File = files::open_file(&markdown_file_path);
-	let markdown_file_title: String = get_markdown_file_title(&markdown_file);
 
 	MarkdownFile {
 		markdown_file_fd: markdown_file,
@@ -61,13 +56,13 @@ fn get_markdown_file(markdown_file_path: String) -> MarkdownFile {
 }
 
 /// Get the title of a Markdown file (text from the first level 1 heading)
-fn get_markdown_file_title(markdown_file: &File) -> String {
-	let read_buffer = BufReader::new(markdown_file);
+fn get_markdown_file_title(markdown_file_path: String) -> String {
+	let lines: Vec<String> = files::read_lines(files::open_file(&markdown_file_path));
 	let mut title_line: String = String::new();
 
-	for line in read_buffer.lines().flatten() {
-		if line.contains("#") {
-			title_line = line.clone();
+	for line in lines {
+		if line.contains("# ") {
+			title_line = line;
 			break;
 		}
 	}
