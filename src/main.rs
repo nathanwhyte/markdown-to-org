@@ -1,13 +1,20 @@
-use std::{
-	fs::File,
-	process::exit,
-};
+use std::{fs::File, process::exit};
 
 /// File actions (open, create, read lines, etc.)
 mod files;
 
-/// Syntax elements that are common to Markdown and Org files
-mod syntax_elements;
+enum SyntaxElementType {
+	Header,
+	UnorderedEntry,
+	OrderedEntry,
+}
+
+struct MarkdownSyntaxElement {
+	element_depth: i32,
+	element_type: SyntaxElementType,
+	list_order: i32,
+	element_text: String,
+}
 
 /// Indent by two spaces for sub-items
 static SPACES_PER_DEPTH: i32 = 2;
@@ -16,10 +23,8 @@ static SPACES_PER_DEPTH: i32 = 2;
 static MAX_DEPTH: i32 = 5;
 
 fn main() {
-	// TODO collect args
 	let args: Vec<String> = collect_args();
 
-	// TODO open a file at a specific path or from cwd
 	let markdown_file: File = files::open_file(&args[1].clone());
 }
 
