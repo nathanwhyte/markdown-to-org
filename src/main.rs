@@ -4,7 +4,8 @@ use std::{fs::File, process::exit};
 mod files;
 
 struct MarkdownFile {
-	markdown_file_fd: File,
+	fd: File,
+	file_name: String,
 	title: String,
 }
 
@@ -46,13 +47,17 @@ fn collect_args() -> Vec<String> {
 
 /// Open the Markdown file at given path and build MarkdownFile struct for that file
 fn get_markdown_file(markdown_file_path: String) -> MarkdownFile {
-	let markdown_file_title: String = get_markdown_file_title(markdown_file_path.clone());
 	let markdown_file: File = files::open_file(&markdown_file_path);
+	let markdown_file_title: String = get_markdown_file_title(markdown_file_path.clone());
+	let markdown_file_name: String = get_markdown_file_name(markdown_file_path.clone());
 
-	MarkdownFile {
-		markdown_file_fd: markdown_file,
+	// TODO get file name from markdown_file_path
+
+	return MarkdownFile {
+		fd: markdown_file,
 		title: markdown_file_title,
-	}
+		file_name: markdown_file_name,
+	};
 }
 
 /// Get the title of a Markdown file (text from the first level 1 heading)
@@ -68,4 +73,27 @@ fn get_markdown_file_title(markdown_file_path: String) -> String {
 	}
 
 	return title_line.trim().replacen("# ", "", 1);
+}
+
+fn get_markdown_file_name(mut markdown_file_path: String) -> String {
+	let mut markdown_file_name: String = String::new();
+
+	if !markdown_file_path.contains("/") {
+		println!("file name: {}", markdown_file_path);
+		return markdown_file_path;
+	}
+
+	let mut current_char: char = markdown_file_path.pop().unwrap();
+	while current_char != '/' {
+		markdown_file_name.insert(0, current_char);
+		current_char = markdown_file_path.pop().unwrap();
+	}
+
+	println!("file name: {}", markdown_file_name);
+
+	return markdown_file_name;
+}
+
+fn convert_to_org() {
+	// TODO read lines and build struct for each one
 }
