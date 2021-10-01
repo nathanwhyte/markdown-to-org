@@ -1,4 +1,5 @@
-use std::{fs::File, process::exit};
+use std::fs::File;
+use std::process::exit;
 
 /// File actions (open, create, read lines, etc.)
 mod files;
@@ -75,6 +76,7 @@ fn get_markdown_file_title(markdown_file_path: String) -> String {
 	return title_line.trim().replacen("# ", "", 1);
 }
 
+/// Get the name of the given Markdown file (name + extension)
 fn get_markdown_file_name(mut markdown_file_path: String) -> String {
 	let mut markdown_file_name: String = String::new();
 
@@ -93,25 +95,27 @@ fn get_markdown_file_name(mut markdown_file_path: String) -> String {
 
 /// Driver function for converting Markdown to Org
 fn convert_to_org(markdown_file_struct: MarkdownFile) {
-
 	// TODO read lines and build struct for each one
 	let mut syntax_elements: Vec<MarkdownSyntaxElement> = get_syntax_elements(markdown_file_struct);
 }
 
 /// Build a vector of Markdown syntax elements for each valid line in the given Markdown file
 fn get_syntax_elements(markdown_file_struct: MarkdownFile) -> Vec<MarkdownSyntaxElement> {
-	let syntax_elements_vec = Vec::new();
+	let mut syntax_elements_vec = Vec::new();
 	let lines: Vec<String> = files::read_lines(markdown_file_struct.fd);
 
-	// TODO skip first line that has text (title line)
 	let title_index: usize = find_title_line_index(markdown_file_struct.title, lines.clone());
+	let mut line;
 
-	for line_index in title_index..lines.len() {
-		// TODO don't process blank lines
+	for line_index in (title_index + 1)..lines.len() {
+		line = lines[line_index].clone();
 
+		if line.is_empty() {
+			continue;
+		}
+
+		syntax_elements_vec.push(build_syntax_element_struct(line.clone()));
 	}
-
-	// TODO build a syntax_element struct for each line
 
 	return syntax_elements_vec;
 }
@@ -129,4 +133,35 @@ fn find_title_line_index(markdown_file_title: String, lines: Vec<String>) -> usi
 	}
 
 	return title_line_index;
+}
+
+/// Build a MarkdownSyntaxElement struct for the given line
+fn build_syntax_element_struct(line: String) -> MarkdownSyntaxElement {
+	return MarkdownSyntaxElement {
+		element_depth: line.find(' ').unwrap() as i32,
+		element_text: get_element_text(line.clone()),
+		element_type: get_syntax_element_type(line.clone()),
+		list_order: 0,
+	};
+}
+
+fn get_element_text(mut line: String) -> String {
+	while !line.chars().next().unwrap().is_alphabetic() {
+		line.remove(0);
+	}
+
+	return line.clone();
+}
+
+fn get_syntax_element_type(line: String) -> SyntaxElementType {
+	let mut syntax_element_type: SyntaxElementType = SyntaxElementType::Header;
+
+	let first_char: char = line.chars().nth(0).unwrap();
+	if first_char == '-' {
+		syntax_element_type = SyntaxElementType::UnorderedEntry;
+	} else if first_char.is_numeric() {
+		syntax_element_type = SyntaxElementType::OrderedEntry;
+	}
+
+	return syntax_element_type;
 }
