@@ -1,5 +1,3 @@
-// module to handle some file actions
-
 use dirs::home_dir;
 use std::{
 	fs::File,

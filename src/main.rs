@@ -137,22 +137,16 @@ fn find_title_line_index(markdown_file_title: String, lines: Vec<String>) -> usi
 
 /// Build a MarkdownSyntaxElement struct for the given line
 fn build_syntax_element_struct(line: String) -> MarkdownSyntaxElement {
+	let currnet_element_type: SyntaxElementType = get_syntax_element_type(line.clone());
 	return MarkdownSyntaxElement {
 		element_depth: line.find(' ').unwrap() as i32,
+		list_order: get_list_order(&currnet_element_type, line.clone()),
+		element_type: currnet_element_type,
 		element_text: get_element_text(line.clone()),
-		element_type: get_syntax_element_type(line.clone()),
-		list_order: 0,
 	};
 }
 
-fn get_element_text(mut line: String) -> String {
-	while !line.chars().next().unwrap().is_alphabetic() {
-		line.remove(0);
-	}
-
-	return line.clone();
-}
-
+/// Get type of a Markdown syntax element based on the first character in the line
 fn get_syntax_element_type(line: String) -> SyntaxElementType {
 	let mut syntax_element_type: SyntaxElementType = SyntaxElementType::Header;
 
@@ -164,4 +158,20 @@ fn get_syntax_element_type(line: String) -> SyntaxElementType {
 	}
 
 	return syntax_element_type;
+}
+
+fn get_list_order(element_type: &SyntaxElementType, line: String) -> i32 {
+	return match element_type {
+		SyntaxElementType::Header => 0,
+		SyntaxElementType::UnorderedEntry => 0,
+		SyntaxElementType::OrderedEntry => line.chars().nth(0).unwrap().to_digit(10).unwrap() as i32,
+	};
+}
+
+fn get_element_text(mut line: String) -> String {
+	while !line.chars().next().unwrap().is_alphabetic() {
+		line.remove(0);
+	}
+
+	return line.clone().trim().to_string();
 }
