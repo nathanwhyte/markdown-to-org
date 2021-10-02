@@ -14,3 +14,6 @@ test/
 
 # Project planning file
 markdown-to-org.org
+
+# Ignore README until I actually write it
+README.org
