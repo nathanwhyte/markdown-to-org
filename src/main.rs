@@ -7,7 +7,6 @@ mod files;
 
 struct MarkdownFile {
 	fd: File,
-	file_path: String,
 	title: String,
 }
 
@@ -23,12 +22,6 @@ struct MarkdownSyntaxElement {
 	list_order: char,
 	element_text: String,
 }
-
-/// Indent by two spaces for sub-items
-static SPACES_PER_DEPTH: i32 = 2;
-
-/// Maximum depth allowed of a header or list item
-static MAX_DEPTH: i32 = 5;
 
 fn main() {
 	let args: Vec<String> = collect_args();
@@ -57,7 +50,6 @@ fn get_markdown_file(markdown_file_path: String) -> MarkdownFile {
 	return MarkdownFile {
 		fd: markdown_file,
 		title: markdown_file_title,
-		file_path: markdown_file_path,
 	};
 }
 
@@ -204,6 +196,5 @@ fn write_list_element(mut org_file: &File, element: MarkdownSyntaxElement, is_or
 			element.list_order, element.element_text
 		)
 		.expect("Error writing list element");
-
 	}
 }
